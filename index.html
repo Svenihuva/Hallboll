@@ -66,21 +66,32 @@
             `;
         }
 
-        function updateOpponent() {
-            if (ball.y < opponent.y + paddleHeight / 2) {
-                opponent.y -= opponent.speed;
-            } else {
-                opponent.y += opponent.speed;
-            }
+        function drawObstacles() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(200, 50, 400, 100); // Bord med sex stolar runt
+            ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
+            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
         }
 
-        function checkPaddleCollision() {
-            if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight) {
-                ball.vx *= -1; // Studsa åt andra hållet
-            }
-            if (ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
-                ball.vx *= -1;
-            }
+        function drawWalls() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, 10); // Övre vägg
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10); // Nedre vägg
+            ctx.fillRect(0, 0, 10, canvas.height); // Vänster vägg
+            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height); // Höger vägg
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawWalls();
+            drawObstacles();
+            
+            ctx.fillStyle = 'black';
+            ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
+            ctx.fillStyle = opponent.color;
+            ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
+            ctx.fillStyle = 'black';
+            ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
         }
 
         function update() {
@@ -91,19 +102,7 @@
             
             ball.x += ball.vx;
             ball.y += ball.vy;
-            checkPaddleCollision();
-            updateOpponent();
             updateScoreboard();
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'black';
-            ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
-            ctx.fillStyle = opponent.color;
-            ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
-            ctx.fillStyle = 'black';
-            ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
         }
 
         function loop() {
