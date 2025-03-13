@@ -19,7 +19,7 @@
     <div id=\"startScreen\">
         <h1>Hallboll</h1>
         <input type=\"text\" id=\"playerName\" placeholder=\"Skriv in ditt namn\" />
-        <button onclick=\"startGame()\">Starta</button>
+        <button onclick=\"startGame(event)\">Starta</button>
     </div>
     <div id=\"gameContainer\">
         <div id=\"scoreboard\"></div>
@@ -44,7 +44,8 @@
         document.addEventListener('keydown', (e) => keys[e.key] = true);
         document.addEventListener('keyup', (e) => keys[e.key] = false);
 
-        function startGame() {
+        function startGame(event) {
+            if (event) event.preventDefault();
             playerName = document.getElementById('playerName').value || \"Player 0\";
             document.getElementById('startScreen').style.display = 'none';
             canvas.style.display = 'block';
@@ -67,12 +68,10 @@
             ctx.fillStyle = 'black';
             ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
 
-            // Draw obstacles according to provided sketch
-            ctx.fillRect(250, 50, 300, 60); // Table with chairs
-            ctx.fillRect(canvas.width - 100, 50, 50, 50); // Drawer
-            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Stairs
+            ctx.fillRect(250, 50, 300, 60);
+            ctx.fillRect(canvas.width - 100, 50, 50, 50);
+            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40);
 
-            // Walls with openings for goals
             ctx.fillRect(0, 0, canvas.width, 10);
             ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
             ctx.fillRect(0, 0, 10, canvas.height / 2 - 30);
@@ -90,13 +89,11 @@
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            // Basic ball collision with paddles
             if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight ||
                 ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
                 ball.vx *= -1;
             }
 
-            // Ball collision with top/bottom walls
             if(ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
 
             updateScoreboard();
