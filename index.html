@@ -82,6 +82,7 @@
             playerName = document.getElementById('playerName').value || "Player 0";
             document.getElementById('startScreen').style.display = 'none';
             canvas.style.display = 'block';
+            resetGame();
             loop();
         }
 
@@ -107,11 +108,19 @@
             ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
 
             // Rita hinder
-            ctx.fillRect(200, 50, 400, 100); // Bord med sex stolar
+            ctx.fillStyle = 'brown';
+            ctx.fillRect(200, 50, 400, 100); // Bord
+            ctx.fillStyle = 'gray';
+            for (let i = 0; i < 6; i++) {
+                ctx.fillRect(200 + i * 60, 150, 20, 20); // Stolarna
+            }
+            ctx.fillStyle = 'blue';
             ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
+            ctx.fillStyle = 'gray';
             ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
 
             // Rita väggar och mål
+            ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, 10); // Övre vägg
             ctx.fillRect(0, canvas.height - 10, canvas.width, 10); // Nedre vägg
             ctx.fillRect(0, 0, 10, canvas.height / 2 - 50); // Vänster vägg (övre del)
@@ -151,11 +160,11 @@
             }
 
             // Bollens kollision med mål
-            if (ball.x <= 10 && (ball.y < canvas.height / 2 - 50 || ball.y > canvas.height / 2 + 50)) {
+            if (ball.x <= 10 && (ball.y >= canvas.height / 2 - 50 && ball.y <= canvas.height / 2 + 50)) {
                 opponent.score++;
                 resetBall();
             }
-            if (ball.x >= canvas.width - ballSize - 10 && (ball.y < canvas.height / 2 - 50 || ball.y > canvas.height / 2 + 50)) {
+            if (ball.x >= canvas.width - ballSize - 10 && (ball.y >= canvas.height / 2 - 50 && ball.y <= canvas.height / 2 + 50)) {
                 player.score++;
                 resetBall();
             }
