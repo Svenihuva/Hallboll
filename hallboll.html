@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hallboll</title>
+    <style>
+        body { text-align: center; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; }
+        #gameContainer { position: relative; }
+        canvas { background-color: white; border: 2px solid black; display: block; margin: auto; }
+        #scoreboard {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h1>Hallboll</h1>
+        <input type="text" id="playerName" placeholder="Skriv in ditt namn" />
+        <button onclick="startGame()">Starta</button>
+    </div>
+    <div id="gameContainer">
+        <div id="scoreboard"></div>
+    </div>
+    <script>
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        document.getElementById('gameContainer').appendChild(canvas);
+        canvas.width = 800;
+        canvas.height = 400;
+        canvas.style.display = 'none';
+
+        const paddleWidth = 10, paddleHeight = 80;
+        const ballSize = 10;
+        let playerName = "Player 0";
+
+        let player = { x: 50, y: canvas.height / 2 - paddleHeight / 2, score: 0, wins: 0, speed: 5 };
+        let opponents = [
+            { name: "Inga-Maj", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 2, color: "yellow" },
+            { name: "Dayal", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 3, color: "brown" },
+            { name: "Anne-Marie", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 4, color: "pink" },
+            { name: "Lennart \"Legenden\"", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 5, color: "green" },
+            { name: "Glenne", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 6, color: "blue" }
+        ];
+        let currentOpponentIndex = 0;
+        let opponent = opponents[currentOpponentIndex];
+
+        let ball = { x: player.x + paddleWidth + 5, y: player.y + paddleHeight / 2, vx: 4, vy: 4, speedMultiplier: 1 };
+        let keys = {};
+        document.addEventListener('keydown', (e) => keys[e.key] = true);
+        document.addEventListener('keyup', (e) => keys[e.key] = false);
+
+        function startGame() {
+            playerName = document.getElementById('playerName').value || "Player 0";
+            document.getElementById('startScreen').style.display = 'none';
+            canvas.style.display = 'block';
+            updateScoreboard();
+            loop();
+        }
+
+        function updateScoreboard() {
+            document.getElementById('scoreboard').innerHTML = `
+                BÄST AV 3 | Motståndare: ${opponent.name} | ${playerName}: ${player.score} | ${opponent.name}: ${opponent.score} | Match: ${player.wins + 1}/5
+            `;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Rita ut rummet
+            ctx.fillStyle = 'black';
+            ctx.fillRect(200, 50, 400, 100); // Bord
+            ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
+            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
+
+            // Väggar
+            ctx.fillRect(0, 0, canvas.width, 10); // Övre vägg
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10); // Nedre vägg
+            ctx.fillRect(0, 0, 10, canvas.height / 2 - 50); // Vänster vägg övre
+            ctx.fillRect(0, canvas.height / 2 + 50, 10, canvas.height / 2 - 50); // Vänster vägg nedre
+            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height / 2 - 50); // Höger vägg övre
+            ctx.fillRect(canvas.width - 10, canvas.height / 2 + 50, 10, canvas.height / 2 - 50); // Höger vägg nedre
+            
+            // Spelare och motståndare
+            ctx.fillStyle = 'black';
+            ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
+            ctx.fillStyle = opponent.color;
+            ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
+            
+            // Bollen
+            ctx.fillStyle = 'black';
+            ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
+        }
+
+        function update() {
+            if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
+            if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
+            
+            // Bollen rör sig
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            
+            // Väggkollisioner
+            if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
+            
+            // Racket-kollision
+            if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight) {
+                ball.vx *= -1;
+            }
+            if (ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
+                ball.vx *= -1;
+            }
+            updateScoreboard();
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>
