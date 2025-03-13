@@ -25,7 +25,6 @@
         <div id="scoreboard"></div>
     </div>
     <script>
-        // Skapa canvas och kontext
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         document.getElementById('gameContainer').appendChild(canvas);
@@ -33,7 +32,6 @@
         canvas.height = 400;
         canvas.style.display = 'none';
 
-        // Spelvariabler
         const paddleWidth = 10, paddleHeight = 80;
         const ballSize = 10;
         let playerName = "Player 0";
@@ -51,7 +49,6 @@
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4, speedMultiplier: 1 };
         let keys = {};
 
-        // Starta spelet
         function startGame() {
             playerName = document.getElementById('playerName').value || "Player 0";
             document.getElementById('startScreen').style.display = 'none';
@@ -60,43 +57,50 @@
             loop();
         }
 
-        // Uppdatera poängtavlan
         function updateScoreboard() {
             document.getElementById('scoreboard').innerHTML = `
                 BÄST AV 3 | Motståndare: ${opponent.name} | ${playerName}: ${player.score} | ${opponent.name}: ${opponent.score} | Match: ${player.wins + 1}/5
             `;
         }
 
-        // Rita upp spelet
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'black';
-            ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
-            ctx.fillStyle = opponent.color;
-            ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
-            ctx.fillStyle = 'black';
-            ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
+        function checkCollisions() {
+            // Racket-kollision
+            if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight) {
+                ball.vx *= -1;
+            }
+            if (ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
+                ball.vx *= -1;
+            }
+
+            // Vägg-kollisioner
+            if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
+            
+            // Mål-kollisioner
+            if ((ball.x <= 10 && (ball.y > canvas.height / 2 - 30 && ball.y < canvas.height / 2 + 30)) || 
+                (ball.x >= canvas.width - 20 && (ball.y > canvas.height / 2 - 30 && ball.y < canvas.height / 2 + 30))) {
+                resetBall();
+            }
         }
 
-        // Uppdatera spelets logik
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.vx = 4 * (Math.random() > 0.5 ? 1 : -1);
+            ball.vy = 4 * (Math.random() > 0.5 ? 1 : -1);
+        }
+
         function update() {
             if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
             if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
             if (keys['ArrowLeft'] && player.x > 10) player.x -= player.speed;
             if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
             
-            // Bollrörelse och kollisioner
             ball.x += ball.vx;
             ball.y += ball.vy;
-            
-            if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
-            if ((ball.x <= 10 && (ball.y < canvas.height / 2 - 40 || ball.y > canvas.height / 2 + 40)) ||
-                (ball.x >= canvas.width - 20 && (ball.y < canvas.height / 2 - 40 || ball.y > canvas.height / 2 + 40))) {
-                ball.vx *= -1;
-            }
+            checkCollisions();
+            updateScoreboard();
         }
 
-        // Spelloop
         function loop() {
             update();
             draw();
@@ -105,6 +109,7 @@
         
         document.addEventListener('keydown', (e) => keys[e.key] = true);
         document.addEventListener('keyup', (e) => keys[e.key] = false);
+        loop();
     </script>
 </body>
 </html>
