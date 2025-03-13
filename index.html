@@ -1,28 +1,51 @@
 <!DOCTYPE html>
-<html lang=\"sv\">
+<html lang="sv">
 <head>
-    <meta charset=\"UTF-8\">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hallboll</title>
     <style>
-        body { text-align: center; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; }
-        #gameContainer { position: relative; }
-        canvas { background-color: white; border: 2px solid black; display: block; margin: auto; }
+        body { 
+            text-align: center; 
+            background-color: #f4f4f4; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: Arial, sans-serif;
+        }
+        #gameContainer { 
+            position: relative; 
+            margin-top: 20px;
+        }
+        canvas { 
+            background-color: white; 
+            border: 2px solid black; 
+            display: block; 
+            margin: auto; 
+        }
         #scoreboard {
             margin-bottom: 10px;
             font-size: 20px;
             color: gray;
         }
+        #startScreen {
+            margin-top: 50px;
+        }
+        #startScreen input, #startScreen button {
+            margin: 10px;
+            padding: 5px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
-    <div id=\"startScreen\">
+    <div id="startScreen">
         <h1>Hallboll</h1>
-        <input type=\"text\" id=\"playerName\" placeholder=\"Skriv in ditt namn\" />
-        <button onclick=\"startGame(event)\">Starta</button>
+        <input type="text" id="playerName" placeholder="Skriv in ditt namn" />
+        <button onclick="startGame(event)">Starta</button>
     </div>
-    <div id=\"gameContainer\">
-        <div id=\"scoreboard\"></div>
+    <div id="gameContainer">
+        <div id="scoreboard"></div>
     </div>
     <script>
         const canvas = document.createElement('canvas');
@@ -34,9 +57,9 @@
 
         const paddleWidth = 10, paddleHeight = 80;
         const ballSize = 10;
-        let playerName = \"Player 0\";
+        let playerName = "Player 0";
         let player = { x: 50, y: canvas.height / 2 - paddleHeight / 2, score: 0, wins: 0, speed: 5 };
-        let opponent = { name: \"Inga-Maj\", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 2, color: \"yellow\" };
+        let opponent = { name: "Inga-Maj", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 2, color: "yellow" };
 
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4 };
         let keys = {};
@@ -46,7 +69,7 @@
 
         function startGame(event) {
             if (event) event.preventDefault();
-            playerName = document.getElementById('playerName').value || \"Player 0\";
+            playerName = document.getElementById('playerName').value || "Player 0";
             document.getElementById('startScreen').style.display = 'none';
             canvas.style.display = 'block';
             loop();
@@ -60,43 +83,82 @@
 
         function drawPlan() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw player paddle
             ctx.fillStyle = 'black';
             ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
+
+            // Draw opponent paddle
             ctx.fillStyle = opponent.color;
             ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
 
+            // Draw ball
             ctx.fillStyle = 'black';
             ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
 
-            ctx.fillRect(250, 50, 300, 60);
-            ctx.fillRect(canvas.width - 100, 50, 50, 50);
-            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40);
+            // Draw obstacles
+            ctx.fillRect(250, 50, 300, 60); // Bord
+            ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
+            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
 
-            ctx.fillRect(0, 0, canvas.width, 10);
-            ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
-            ctx.fillRect(0, 0, 10, canvas.height / 2 - 30);
-            ctx.fillRect(0, canvas.height / 2 + 30, 10, canvas.height);
-            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height / 2 - 30);
-            ctx.fillRect(canvas.width - 10, canvas.height / 2 + 30, 10, canvas.height);
+            // Draw walls
+            ctx.fillRect(0, 0, canvas.width, 10); // Top wall
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10); // Bottom wall
+            ctx.fillRect(0, 0, 10, canvas.height / 2 - 30); // Left wall top
+            ctx.fillRect(0, canvas.height / 2 + 30, 10, canvas.height); // Left wall bottom
+            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height / 2 - 30); // Right wall top
+            ctx.fillRect(canvas.width - 10, canvas.height / 2 + 30, 10, canvas.height); // Right wall bottom
         }
 
         function update() {
+            // Player movement
             if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
             if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
             if (keys['ArrowLeft'] && player.x > 10) player.x -= player.speed;
             if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
 
+            // Ball movement
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight ||
-                ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
-                ball.vx *= -1;
+            // Ball collision with paddles
+            if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight) {
+                ball.vx = Math.abs(ball.vx); // Bounce to the right
+            }
+            if (ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
+                ball.vx = -Math.abs(ball.vx); // Bounce to the left
             }
 
-            if(ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
+            // Ball collision with walls
+            if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) {
+                ball.vy *= -1;
+            }
+
+            // Ball collision with goals
+            if (ball.x <= 10) {
+                opponent.score++;
+                resetBall();
+            }
+            if (ball.x >= canvas.width - ballSize - 10) {
+                player.score++;
+                resetBall();
+            }
+
+            // Opponent AI
+            if (ball.y < opponent.y + paddleHeight / 2) {
+                opponent.y -= opponent.speed;
+            } else {
+                opponent.y += opponent.speed;
+            }
 
             updateScoreboard();
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.vx = (Math.random() > 0.5 ? 4 : -4);
+            ball.vy = (Math.random() > 0.5 ? 4 : -4);
         }
 
         function loop() {
