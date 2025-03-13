@@ -59,7 +59,17 @@
         const ballSize = 10;
         let playerName = "Player 0";
         let player = { x: 50, y: canvas.height / 2 - paddleHeight / 2, score: 0, wins: 0, speed: 5 };
-        let opponent = { name: "Inga-Maj", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 2, color: "yellow" };
+
+        // Motståndare med olika svårighetsgrader
+        const opponents = [
+            { name: "Inga-Maj", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 2, color: "yellow" },
+            { name: "Dayal", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 3, color: "brown" },
+            { name: "Anne-Marie", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 4, color: "pink" },
+            { name: "Lennart \"Legenden\"", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 5, color: "green" },
+            { name: "Glenne", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 6, color: "blue" }
+        ];
+        let currentOpponentIndex = 0;
+        let opponent = opponents[currentOpponentIndex];
 
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4 };
         let keys = {};
@@ -84,74 +94,85 @@
         function drawPlan() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw player paddle
+            // Rita spelarens racket
             ctx.fillStyle = 'black';
             ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
 
-            // Draw opponent paddle
+            // Rita motståndarens racket
             ctx.fillStyle = opponent.color;
             ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
 
-            // Draw ball
+            // Rita bollen
             ctx.fillStyle = 'black';
             ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
 
-            // Draw obstacles
+            // Rita hinder
             ctx.fillRect(250, 50, 300, 60); // Bord
             ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
             ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
 
-            // Draw walls
-            ctx.fillRect(0, 0, canvas.width, 10); // Top wall
-            ctx.fillRect(0, canvas.height - 10, canvas.width, 10); // Bottom wall
-            ctx.fillRect(0, 0, 10, canvas.height / 2 - 30); // Left wall top
-            ctx.fillRect(0, canvas.height / 2 + 30, 10, canvas.height); // Left wall bottom
-            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height / 2 - 30); // Right wall top
-            ctx.fillRect(canvas.width - 10, canvas.height / 2 + 30, 10, canvas.height); // Right wall bottom
+            // Rita väggar och mål
+            ctx.fillRect(0, 0, canvas.width, 10); // Övre vägg
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10); // Nedre vägg
+            ctx.fillRect(0, 0, 10, canvas.height / 2 - 30); // Vänster vägg (övre del)
+            ctx.fillRect(0, canvas.height / 2 + 30, 10, canvas.height); // Vänster vägg (nedre del)
+            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height / 2 - 30); // Höger vägg (övre del)
+            ctx.fillRect(canvas.width - 10, canvas.height / 2 + 30, 10, canvas.height); // Höger vägg (nedre del)
         }
 
         function update() {
-            // Player movement
+            // Spelarens rörelse
             if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
             if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
             if (keys['ArrowLeft'] && player.x > 10) player.x -= player.speed;
             if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
 
-            // Ball movement
+            // Bollens rörelse
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            // Ball collision with paddles
+            // Bollens kollision med racket
             if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight) {
-                ball.vx = Math.abs(ball.vx); // Bounce to the right
+                ball.vx = Math.abs(ball.vx); // Studsa till höger
             }
             if (ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
-                ball.vx = -Math.abs(ball.vx); // Bounce to the left
+                ball.vx = -Math.abs(ball.vx); // Studsa till vänster
             }
 
-            // Ball collision with walls
+            // Bollens kollision med väggar
             if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) {
                 ball.vy *= -1;
             }
 
-            // Ball collision with goals
-            if (ball.x <= 10) {
+            // Bollens kollision med mål
+            if (ball.x <= 10 && (ball.y < canvas.height / 2 - 30 || ball.y > canvas.height / 2 + 30)) {
                 opponent.score++;
                 resetBall();
             }
-            if (ball.x >= canvas.width - ballSize - 10) {
+            if (ball.x >= canvas.width - ballSize - 10 && (ball.y < canvas.height / 2 - 30 || ball.y > canvas.height / 2 + 30)) {
                 player.score++;
                 resetBall();
             }
 
-            // Opponent AI
+            // Motståndarens AI
             if (ball.y < opponent.y + paddleHeight / 2) {
                 opponent.y -= opponent.speed;
             } else {
                 opponent.y += opponent.speed;
             }
 
+            // Uppdatera poängtavlan
             updateScoreboard();
+
+            // Kolla om någon vunnit
+            if (player.score >= 2) {
+                alert(`${playerName} vann mot ${opponent.name}!`);
+                nextOpponent();
+            }
+            if (opponent.score >= 2) {
+                alert(`${opponent.name} vann!`);
+                resetGame();
+            }
         }
 
         function resetBall() {
@@ -159,6 +180,27 @@
             ball.y = canvas.height / 2;
             ball.vx = (Math.random() > 0.5 ? 4 : -4);
             ball.vy = (Math.random() > 0.5 ? 4 : -4);
+        }
+
+        function nextOpponent() {
+            currentOpponentIndex++;
+            if (currentOpponentIndex >= opponents.length) {
+                alert("Du vann hela spelet!");
+                resetGame();
+            } else {
+                opponent = opponents[currentOpponentIndex];
+                player.score = 0;
+                opponent.score = 0;
+                resetBall();
+            }
+        }
+
+        function resetGame() {
+            currentOpponentIndex = 0;
+            opponent = opponents[currentOpponentIndex];
+            player.score = 0;
+            opponent.score = 0;
+            resetBall();
         }
 
         function loop() {
