@@ -25,6 +25,7 @@
         <div id="scoreboard"></div>
     </div>
     <script>
+        // Skapa canvas och kontext
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         document.getElementById('gameContainer').appendChild(canvas);
@@ -32,10 +33,10 @@
         canvas.height = 400;
         canvas.style.display = 'none';
 
+        // Spelvariabler
         const paddleWidth = 10, paddleHeight = 80;
         const ballSize = 10;
         let playerName = "Player 0";
-
         let player = { x: 50, y: canvas.height / 2 - paddleHeight / 2, score: 0, wins: 0, speed: 5 };
         let opponents = [
             { name: "Inga-Maj", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 2, color: "yellow" },
@@ -49,9 +50,8 @@
 
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4, speedMultiplier: 1 };
         let keys = {};
-        document.addEventListener('keydown', (e) => keys[e.key] = true);
-        document.addEventListener('keyup', (e) => keys[e.key] = false);
 
+        // Starta spelet
         function startGame() {
             playerName = document.getElementById('playerName').value || "Player 0";
             document.getElementById('startScreen').style.display = 'none';
@@ -60,28 +60,14 @@
             loop();
         }
 
+        // Uppdatera poängtavlan
         function updateScoreboard() {
             document.getElementById('scoreboard').innerHTML = `
                 BÄST AV 3 | Motståndare: ${opponent.name} | ${playerName}: ${player.score} | ${opponent.name}: ${opponent.score} | Match: ${player.wins + 1}/5
             `;
         }
 
-        function update() {
-            if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
-            if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
-            if (keys['ArrowLeft'] && player.x > 10) player.x -= player.speed;
-            if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
-            
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-            
-            if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
-            if ((ball.x <= 10 && (ball.y < canvas.height / 2 - 40 || ball.y > canvas.height / 2 + 40)) ||
-                (ball.x >= canvas.width - 20 && (ball.y < canvas.height / 2 - 40 || ball.y > canvas.height / 2 + 40))) {
-                ball.vx *= -1;
-            }
-        }
-
+        // Rita upp spelet
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'black';
@@ -92,12 +78,33 @@
             ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
         }
 
+        // Uppdatera spelets logik
+        function update() {
+            if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
+            if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
+            if (keys['ArrowLeft'] && player.x > 10) player.x -= player.speed;
+            if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
+            
+            // Bollrörelse och kollisioner
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            
+            if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
+            if ((ball.x <= 10 && (ball.y < canvas.height / 2 - 40 || ball.y > canvas.height / 2 + 40)) ||
+                (ball.x >= canvas.width - 20 && (ball.y < canvas.height / 2 - 40 || ball.y > canvas.height / 2 + 40))) {
+                ball.vx *= -1;
+            }
+        }
+
+        // Spelloop
         function loop() {
             update();
             draw();
             requestAnimationFrame(loop);
         }
-        loop();
+        
+        document.addEventListener('keydown', (e) => keys[e.key] = true);
+        document.addEventListener('keyup', (e) => keys[e.key] = false);
     </script>
 </body>
 </html>
