@@ -71,7 +71,7 @@
         let currentOpponentIndex = 0;
         let opponent = opponents[currentOpponentIndex];
 
-        let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4 };
+        let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4, speedMultiplier: 1 };
         let keys = {};
 
         document.addEventListener('keydown', (e) => keys[e.key] = true);
@@ -107,17 +107,17 @@
             ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
 
             // Rita hinder
-            ctx.fillRect(250, 50, 300, 60); // Bord
+            ctx.fillRect(200, 50, 400, 100); // Bord med sex stolar
             ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
             ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
 
             // Rita väggar och mål
             ctx.fillRect(0, 0, canvas.width, 10); // Övre vägg
             ctx.fillRect(0, canvas.height - 10, canvas.width, 10); // Nedre vägg
-            ctx.fillRect(0, 0, 10, canvas.height / 2 - 30); // Vänster vägg (övre del)
-            ctx.fillRect(0, canvas.height / 2 + 30, 10, canvas.height); // Vänster vägg (nedre del)
-            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height / 2 - 30); // Höger vägg (övre del)
-            ctx.fillRect(canvas.width - 10, canvas.height / 2 + 30, 10, canvas.height); // Höger vägg (nedre del)
+            ctx.fillRect(0, 0, 10, canvas.height / 2 - 50); // Vänster vägg (övre del)
+            ctx.fillRect(0, canvas.height / 2 + 50, 10, canvas.height); // Vänster vägg (nedre del)
+            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height / 2 - 50); // Höger vägg (övre del)
+            ctx.fillRect(canvas.width - 10, canvas.height / 2 + 50, 10, canvas.height); // Höger vägg (nedre del)
         }
 
         function update() {
@@ -128,15 +128,21 @@
             if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
 
             // Bollens rörelse
-            ball.x += ball.vx;
-            ball.y += ball.vy;
+            ball.x += ball.vx * ball.speedMultiplier;
+            ball.y += ball.vy * ball.speedMultiplier;
 
             // Bollens kollision med racket
             if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight) {
+                const hitPosition = (ball.y - player.y) / paddleHeight; // 0 (toppen) till 1 (botten)
                 ball.vx = Math.abs(ball.vx); // Studsa till höger
+                ball.vy = (hitPosition - 0.5) * 8; // Vinkel beroende på träffpunkt
+                ball.speedMultiplier = 1.2; // Öka hastigheten vid träff
             }
             if (ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
+                const hitPosition = (ball.y - opponent.y) / paddleHeight; // 0 (toppen) till 1 (botten)
                 ball.vx = -Math.abs(ball.vx); // Studsa till vänster
+                ball.vy = (hitPosition - 0.5) * 8; // Vinkel beroende på träffpunkt
+                ball.speedMultiplier = 1.2; // Öka hastigheten vid träff
             }
 
             // Bollens kollision med väggar
@@ -145,11 +151,11 @@
             }
 
             // Bollens kollision med mål
-            if (ball.x <= 10 && (ball.y < canvas.height / 2 - 30 || ball.y > canvas.height / 2 + 30)) {
+            if (ball.x <= 10 && (ball.y < canvas.height / 2 - 50 || ball.y > canvas.height / 2 + 50)) {
                 opponent.score++;
                 resetBall();
             }
-            if (ball.x >= canvas.width - ballSize - 10 && (ball.y < canvas.height / 2 - 30 || ball.y > canvas.height / 2 + 30)) {
+            if (ball.x >= canvas.width - ballSize - 10 && (ball.y < canvas.height / 2 - 50 || ball.y > canvas.height / 2 + 50)) {
                 player.score++;
                 resetBall();
             }
@@ -160,6 +166,14 @@
             } else {
                 opponent.y += opponent.speed;
             }
+            if (ball.x < opponent.x) {
+                opponent.x -= opponent.speed;
+            } else {
+                opponent.x += opponent.speed;
+            }
+
+            // Minska bollens hastighet över tid
+            ball.speedMultiplier *= 0.99;
 
             // Uppdatera poängtavlan
             updateScoreboard();
@@ -180,6 +194,7 @@
             ball.y = canvas.height / 2;
             ball.vx = (Math.random() > 0.5 ? 4 : -4);
             ball.vy = (Math.random() > 0.5 ? 4 : -4);
+            ball.speedMultiplier = 1;
         }
 
         function nextOpponent() {
