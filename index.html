@@ -47,7 +47,7 @@
         let currentOpponentIndex = 0;
         let opponent = opponents[currentOpponentIndex];
 
-        let ball = { x: player.x + paddleWidth + 5, y: player.y + paddleHeight / 2, vx: 4, vy: 4, speedMultiplier: 1 };
+        let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4, speedMultiplier: 1 };
         let keys = {};
         document.addEventListener('keydown', (e) => keys[e.key] = true);
         document.addEventListener('keyup', (e) => keys[e.key] = false);
@@ -66,34 +66,6 @@
             `;
         }
 
-        function drawObstacles() {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(200, 50, 400, 100); // Bord med sex stolar runt
-            ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
-            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
-        }
-
-        function drawWalls() {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, 10); // Övre vägg
-            ctx.fillRect(0, canvas.height - 10, canvas.width, 10); // Nedre vägg
-            ctx.fillRect(0, 0, 10, canvas.height); // Vänster vägg
-            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height); // Höger vägg
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawWalls();
-            drawObstacles();
-            
-            ctx.fillStyle = 'black';
-            ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
-            ctx.fillStyle = opponent.color;
-            ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
-            ctx.fillStyle = 'black';
-            ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
-        }
-
         function update() {
             if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
             if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
@@ -102,7 +74,22 @@
             
             ball.x += ball.vx;
             ball.y += ball.vy;
-            updateScoreboard();
+            
+            if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
+            if ((ball.x <= 10 && (ball.y < canvas.height / 2 - 40 || ball.y > canvas.height / 2 + 40)) ||
+                (ball.x >= canvas.width - 20 && (ball.y < canvas.height / 2 - 40 || ball.y > canvas.height / 2 + 40))) {
+                ball.vx *= -1;
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'black';
+            ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
+            ctx.fillStyle = opponent.color;
+            ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
+            ctx.fillStyle = 'black';
+            ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
         }
 
         function loop() {
@@ -110,6 +97,7 @@
             draw();
             requestAnimationFrame(loop);
         }
+        loop();
     </script>
 </body>
 </html>
