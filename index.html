@@ -46,14 +46,13 @@
         let currentOpponentIndex = 0;
         let opponent = opponents[currentOpponentIndex];
 
-        let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4, speedMultiplier: 1 };
+        let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4 };
         let keys = {};
 
         function startGame() {
             playerName = document.getElementById('playerName').value || "Player 0";
             document.getElementById('startScreen').style.display = 'none';
             canvas.style.display = 'block';
-            updateScoreboard();
             loop();
         }
 
@@ -65,52 +64,46 @@
 
         function drawObstacles() {
             ctx.fillStyle = 'black';
-            ctx.fillRect(250, 50, 300, 60); // Bord med sex stolar runt
+            ctx.fillRect(250, 50, 300, 60); // Bord
             ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
             ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
         }
 
-        function checkCollisions() {
-            if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight) {
-                ball.vx *= -1;
-            }
-            if (ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
-                ball.vx *= -1;
-            }
-            if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
-            if ((ball.x <= 10 && (ball.y > canvas.height / 2 - 30 && ball.y < canvas.height / 2 + 30)) || 
-                (ball.x >= canvas.width - 20 && (ball.y > canvas.height / 2 - 30 && ball.y < canvas.height / 2 + 30))) {
-                resetBall();
-            }
-        }
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawObstacles();
 
-        function resetBall() {
-            ball.x = canvas.width / 2;
-            ball.y = canvas.height / 2;
-            ball.vx = 4 * (Math.random() > 0.5 ? 1 : -1);
-            ball.vy = 4 * (Math.random() > 0.5 ? 1 : -1);
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
+
+            ctx.fillStyle = opponent.color;
+            ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
+
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ballSize, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         function update() {
             if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
             if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
-            if (keys['ArrowLeft'] && player.x > 10) player.x -= player.speed;
-            if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
             ball.x += ball.vx;
             ball.y += ball.vy;
-            checkCollisions();
+
+            if(ball.y <= 10 || ball.y >= canvas.height - 10) ball.vy *= -1;
+
             updateScoreboard();
         }
 
         function loop() {
             update();
-            drawObstacles();
+            draw();
             requestAnimationFrame(loop);
         }
         
         document.addEventListener('keydown', (e) => keys[e.key] = true);
         document.addEventListener('keyup', (e) => keys[e.key] = false);
-        loop();
     </script>
 </body>
 </html>
