@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang=\"sv\">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Hallboll</title>
     <style>
         body { text-align: center; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; }
@@ -16,13 +16,13 @@
     </style>
 </head>
 <body>
-    <div id="startScreen">
+    <div id=\"startScreen\">
         <h1>Hallboll</h1>
-        <input type="text" id="playerName" placeholder="Skriv in ditt namn" />
-        <button onclick="startGame()">Starta</button>
+        <input type=\"text\" id=\"playerName\" placeholder=\"Skriv in ditt namn\" />
+        <button onclick=\"startGame()\">Starta</button>
     </div>
-    <div id="gameContainer">
-        <div id="scoreboard"></div>
+    <div id=\"gameContainer\">
+        <div id=\"scoreboard\"></div>
     </div>
     <script>
         const canvas = document.createElement('canvas');
@@ -34,23 +34,18 @@
 
         const paddleWidth = 10, paddleHeight = 80;
         const ballSize = 10;
-        let playerName = "Player 0";
+        let playerName = \"Player 0\";
         let player = { x: 50, y: canvas.height / 2 - paddleHeight / 2, score: 0, wins: 0, speed: 5 };
-        let opponents = [
-            { name: "Inga-Maj", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 2, color: "yellow" },
-            { name: "Dayal", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 3, color: "brown" },
-            { name: "Anne-Marie", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 4, color: "pink" },
-            { name: "Lennart \"Legenden\"", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 5, color: "green" },
-            { name: "Glenne", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 6, color: "blue" }
-        ];
-        let currentOpponentIndex = 0;
-        let opponent = opponents[currentOpponentIndex];
+        let opponent = { name: \"Inga-Maj\", x: canvas.width - 60, y: canvas.height / 2 - paddleHeight / 2, score: 0, speed: 2, color: \"yellow\" };
 
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 4, vy: 4 };
         let keys = {};
 
+        document.addEventListener('keydown', (e) => keys[e.key] = true);
+        document.addEventListener('keyup', (e) => keys[e.key] = false);
+
         function startGame() {
-            playerName = document.getElementById('playerName').value || "Player 0";
+            playerName = document.getElementById('playerName').value || \"Player 0\";
             document.getElementById('startScreen').style.display = 'none';
             canvas.style.display = 'block';
             loop();
@@ -58,52 +53,60 @@
 
         function updateScoreboard() {
             document.getElementById('scoreboard').innerHTML = `
-                BÄST AV 3 | Motståndare: ${opponent.name} | ${playerName}: ${player.score} | ${opponent.name}: ${opponent.score} | Match: ${player.wins + 1}/5
+                BÄST AV 3 | Motståndare: ${opponent.name} | ${playerName}: ${player.score} | ${opponent.name}: ${opponent.score}
             `;
         }
 
-        function drawObstacles() {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(250, 50, 300, 60); // Bord
-            ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
-            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
-        }
-
-        function draw() {
+        function drawPlan() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawObstacles();
-
-            ctx.fillStyle = 'blue';
+            ctx.fillStyle = 'black';
             ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
-
             ctx.fillStyle = opponent.color;
             ctx.fillRect(opponent.x, opponent.y, paddleWidth, paddleHeight);
 
-            ctx.fillStyle = 'red';
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ballSize, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
+
+            // Draw obstacles according to provided sketch
+            ctx.fillRect(250, 50, 300, 60); // Table with chairs
+            ctx.fillRect(canvas.width - 100, 50, 50, 50); // Drawer
+            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Stairs
+
+            // Walls with openings for goals
+            ctx.fillRect(0, 0, canvas.width, 10);
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
+            ctx.fillRect(0, 0, 10, canvas.height / 2 - 30);
+            ctx.fillRect(0, canvas.height / 2 + 30, 10, canvas.height);
+            ctx.fillRect(canvas.width - 10, 0, 10, canvas.height / 2 - 30);
+            ctx.fillRect(canvas.width - 10, canvas.height / 2 + 30, 10, canvas.height);
         }
 
         function update() {
             if (keys['ArrowUp'] && player.y > 10) player.y -= player.speed;
             if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
+            if (keys['ArrowLeft'] && player.x > 10) player.x -= player.speed;
+            if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
+
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            if(ball.y <= 10 || ball.y >= canvas.height - 10) ball.vy *= -1;
+            // Basic ball collision with paddles
+            if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight ||
+                ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
+                ball.vx *= -1;
+            }
+
+            // Ball collision with top/bottom walls
+            if(ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
 
             updateScoreboard();
         }
 
         function loop() {
             update();
-            draw();
+            drawPlan();
             requestAnimationFrame(loop);
         }
-        
-        document.addEventListener('keydown', (e) => keys[e.key] = true);
-        document.addEventListener('keyup', (e) => keys[e.key] = false);
     </script>
 </body>
 </html>
