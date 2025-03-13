@@ -63,19 +63,21 @@
             `;
         }
 
+        function drawObstacles() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(250, 50, 300, 60); // Bord med sex stolar runt
+            ctx.fillRect(canvas.width - 100, 50, 50, 50); // Byrå
+            ctx.fillRect(canvas.width - 80, canvas.height - 40, 60, 40); // Trappa
+        }
+
         function checkCollisions() {
-            // Racket-kollision
             if (ball.x <= player.x + paddleWidth && ball.y >= player.y && ball.y <= player.y + paddleHeight) {
                 ball.vx *= -1;
             }
             if (ball.x >= opponent.x - paddleWidth && ball.y >= opponent.y && ball.y <= opponent.y + paddleHeight) {
                 ball.vx *= -1;
             }
-
-            // Vägg-kollisioner
             if (ball.y <= 10 || ball.y >= canvas.height - ballSize - 10) ball.vy *= -1;
-            
-            // Mål-kollisioner
             if ((ball.x <= 10 && (ball.y > canvas.height / 2 - 30 && ball.y < canvas.height / 2 + 30)) || 
                 (ball.x >= canvas.width - 20 && (ball.y > canvas.height / 2 - 30 && ball.y < canvas.height / 2 + 30))) {
                 resetBall();
@@ -94,7 +96,6 @@
             if (keys['ArrowDown'] && player.y < canvas.height - paddleHeight - 10) player.y += player.speed;
             if (keys['ArrowLeft'] && player.x > 10) player.x -= player.speed;
             if (keys['ArrowRight'] && player.x < canvas.width - paddleWidth - 10) player.x += player.speed;
-            
             ball.x += ball.vx;
             ball.y += ball.vy;
             checkCollisions();
@@ -103,7 +104,7 @@
 
         function loop() {
             update();
-            draw();
+            drawObstacles();
             requestAnimationFrame(loop);
         }
         
