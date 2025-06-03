@@ -180,14 +180,14 @@
 
             // Motståndarens AI
             if (ball.y < opponent.y + paddleHeight / 2) {
-                opponent.y -= opponent.speed;
+                opponent.y = Math.max(10, opponent.y - opponent.speed);
             } else {
-                opponent.y += opponent.speed;
+                opponent.y = Math.min(canvas.height - paddleHeight - 10, opponent.y + opponent.speed);
             }
             if (ball.x < opponent.x) {
-                opponent.x -= opponent.speed;
+                opponent.x = Math.max(10, opponent.x - opponent.speed);
             } else {
-                opponent.x += opponent.speed;
+                opponent.x = Math.min(canvas.width - paddleWidth - 10, opponent.x + opponent.speed);
             }
 
             // Minska bollens hastighet över tid
